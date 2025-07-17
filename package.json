@@ -1,0 +1,17 @@
+{
+  "name": "serverless-contact-form-api",
+  "version": "1.0.0",
+  "description": "A server-less contact form api using Node.js and AWS Lambda ",
+  "license": "ISC",
+  "author": "Afaaf Hariri",
+  "type": "module",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "akismet-api": "^6.0.0",
+    "firebase-admin": "^13.4.0",
+    "nodemailer": "^7.0.5"
+  }
+}
