@@ -24,10 +24,14 @@ export const handler = async (event) => {
       body: JSON.stringify({ error: "Only POST requests are allowed" }),
     };
   }
-  console.log("Received event:", JSON.stringify(event));
-  return {
-    statusCode: 200,
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message: "Hello from Lambda!" }),
-  };
+  let contactSubmission;
+  try {
+    contactSubmission = JSON.parse(event.body);
+  } catch (error) {
+    return {
+      statusCode: 400,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ error: "Invalid request body" }),
+    };
+  }
 };
