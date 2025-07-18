@@ -24,6 +24,7 @@ export const handler = async (event) => {
       body: JSON.stringify({ error: "Only POST requests are allowed" }),
     };
   }
+
   let contactSubmission;
   try {
     contactSubmission = JSON.parse(event.body);
@@ -34,16 +35,24 @@ export const handler = async (event) => {
       body: JSON.stringify({ error: "Invalid request body" }),
     };
   }
-  if (
-    !contactSubmission ||
-    !contactSubmission.name ||
-    !contactSubmission.email ||
-    !contactSubmission.message
-  ) {
+
+  try {
+    const client = await connectToDatabase();
+    const db = client.db();
+    const result = await db.collection("contactSubmissions").insertOne({
+      ...contactSubmission,
+      createdAt: new Date(),
+    });
     return {
-      statusCode: 400,
+      statusCode: 201,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ error: "Missing required fields" }),
+      body: JSON.stringify({ id: result.insertedId }),
+    };
+  } catch (error) {
+    return {
+      statusCode: 500,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ error: "Failed to save submission" }),
     };
   }
 };
