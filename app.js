@@ -34,4 +34,16 @@ export const handler = async (event) => {
       body: JSON.stringify({ error: "Invalid request body" }),
     };
   }
+  if (
+    !contactSubmission ||
+    !contactSubmission.name ||
+    !contactSubmission.email ||
+    !contactSubmission.message
+  ) {
+    return {
+      statusCode: 400,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ error: "Missing required fields" }),
+    };
+  }
 };
