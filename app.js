@@ -13,7 +13,8 @@ async function connectToDatabase() {
 }
 
 export const handler = async (event) => {
-  if (event.httpMethod !== "POST") {
+  const method = event.httpMethod || event.requestContext?.http?.method;
+  if (method !== "POST") {
     return {
       statusCode: 405,
       headers: { Allow: "POST" },
