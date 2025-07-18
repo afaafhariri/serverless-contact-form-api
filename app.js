@@ -17,6 +17,13 @@ async function connectToDatabase() {
 }
 
 export const handler = async (event) => {
+  if (event.httpMethod !== "POST") {
+    return {
+      statusCode: 405,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ error: "Only POST requests are allowed" }),
+    };
+  }
   console.log("Received event:", JSON.stringify(event));
   return {
     statusCode: 200,
