@@ -1,55 +1,53 @@
-// import "dotenv/config";
 import { MongoClient } from "mongodb";
 
-const uri = process.env.MONGODB_URI;
-const client = new MongoClient(uri);
-let cachedDb = null;
+let cachedClient = null;
 
 async function connectToDatabase() {
-  if (cachedDb) {
-    return cachedDb;
-  }
-  const db = await client.connect();
-  cachedDb = db;
-  return db;
+  if (cachedClient) return cachedClient;
+  const uri = process.env.MONGODB_URI;
+  if (!uri) throw new Error("MONGODB_URI environment variable is not set");
+  const client = new MongoClient(uri);
+  await client.connect();
+  cachedClient = client;
+  return client;
 }
 
 export const handler = async (event) => {
   if (event.httpMethod !== "POST") {
     return {
       statusCode: 405,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ error: "Only POST requests are allowed" }),
+      headers: { Allow: "POST" },
+      body: JSON.stringify({ error: "Method Not Allowed" }),
     };
   }
 
-  let contactSubmission;
+  let submission;
   try {
-    contactSubmission = JSON.parse(event.body);
-  } catch (error) {
+    submission = JSON.parse(event.body);
+  } catch (err) {
     return {
       statusCode: 400,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ error: "Invalid request body" }),
+      body: JSON.stringify({ error: "Invalid JSON payload" }),
     };
   }
 
   try {
     const client = await connectToDatabase();
     const db = client.db();
-    const result = await db.collection("contactSubmissions").insertOne({
-      ...contactSubmission,
+    const result = await db.collection("contacts").insertOne({
+      ...submission,
       createdAt: new Date(),
     });
+
     return {
       statusCode: 201,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: result.insertedId }),
     };
-  } catch (error) {
+  } catch (err) {
+    console.error("Database insertion error:", err);
     return {
       statusCode: 500,
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ error: "Failed to save submission" }),
     };
   }
