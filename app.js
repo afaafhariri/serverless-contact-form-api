@@ -37,7 +37,7 @@ async function isSpam(submission) {
     blog: process.env.AKISMET_BLOG_URL,
   });
   try {
-    return await client.checkComment({
+    return await akismet.checkComment({
       user_ip: submission.ip || "",
       user_agent: submission.userAgent || "",
       referrer: submission.referrer || "",
