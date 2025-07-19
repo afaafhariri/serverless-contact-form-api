@@ -71,6 +71,14 @@ export const handler = async (event) => {
     };
   }
 
+  const spam = await isSpam(submission);
+  if (spam) {
+    return {
+      statusCode: 403,
+      body: JSON.stringify({ error: "Spam detected" }),
+    };
+  }
+
   let insertedId;
   try {
     const client = await connectToDatabase();
