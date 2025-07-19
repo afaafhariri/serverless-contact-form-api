@@ -45,7 +45,10 @@ async function isSpam(submission) {
       comment_author_email: submission.email || "",
       comment_content: submission.message || "",
     });
-  } catch (err) {}
+  } catch (err) {
+    console.error("Akismet check failed:", err);
+    return false;
+  }
 }
 
 export const handler = async (event) => {
