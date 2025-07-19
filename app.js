@@ -59,11 +59,9 @@ export const handler = async (event) => {
       createdAt: new Date(),
     });
     insertedId = result.insertedId;
-    return {
-      statusCode: 201,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: insertedId }),
-    };
+    if (!insertedId) {
+      throw new Error("Failed to insert submission into database");
+    }
   } catch (err) {
     console.error("Database insertion error:", err);
     return {
