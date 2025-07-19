@@ -124,4 +124,4 @@ Expect **403 Forbidden** with `{ "error": "Spam detected" }`.
 
 ## License
 
-MIT © Afaaf Hariri
+© Afaaf Hariri
