@@ -14,7 +14,7 @@ A simple serverless contact form backend built with Node.js, AWS Lambda, API Gat
 - **Node.js** v16.x or later
 - **AWS Account** with permissions to create Lambda functions and API Gateway
 - **MongoDB Atlas** (or self-hosted) URI
-- **SMTP credentials** (preferef Gmail App Password)
+- **SMTP credentials** (Gmail prefered)
 - **Akismet API Key** and your site’s base URL
 
 ## Installation
