@@ -1,5 +1,6 @@
 import { MongoClient } from "mongodb";
 import nodemailer from "nodemailer";
+import AkismetClient from "akismet-api";
 
 let cachedClient = null;
 async function connectToDatabase() {
@@ -28,6 +29,23 @@ function getTransporter() {
     },
   });
   return cachedTransporter;
+}
+
+async function isSpam(submission) {
+  const akismet = new AkismetClient({
+    key: process.env.AKISMET_API_KEY,
+    blog: process.env.AKISMET_BLOG_URL,
+  });
+  try {
+    return await client.checkComment({
+      user_ip: submission.ip || "",
+      user_agent: submission.userAgent || "",
+      referrer: submission.referrer || "",
+      comment_author: submission.name || "",
+      comment_author_email: submission.email || "",
+      comment_content: submission.message || "",
+    });
+  } catch (err) {}
 }
 
 export const handler = async (event) => {
