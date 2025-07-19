@@ -1,7 +1,7 @@
 import { MongoClient } from "mongodb";
+import nodemailer from "nodemailer";
 
 let cachedClient = null;
-
 async function connectToDatabase() {
   if (cachedClient) return cachedClient;
   const uri = process.env.MONGODB_URI;
@@ -10,6 +10,24 @@ async function connectToDatabase() {
   await client.connect();
   cachedClient = client;
   return client;
+}
+
+let cachedTransporter = null;
+function getTransporter() {
+  if (cachedTransporter) return cachedTransporter;
+  const host = process.env.SMTP_HOST;
+  const port = parseInt(process.env.SMTP_PORT, 10);
+  const secure = port === 465;
+  cachedTransporter = nodemailer.createTransport({
+    host,
+    port,
+    secure,
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+  });
+  return cachedTransporter;
 }
 
 export const handler = async (event) => {
@@ -32,6 +50,7 @@ export const handler = async (event) => {
     };
   }
 
+  let insertedId;
   try {
     const client = await connectToDatabase();
     const db = client.db();
@@ -39,11 +58,11 @@ export const handler = async (event) => {
       ...submission,
       createdAt: new Date(),
     });
-
+    insertedId = result.insertedId;
     return {
       statusCode: 201,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: result.insertedId }),
+      body: JSON.stringify({ id: insertedId }),
     };
   } catch (err) {
     console.error("Database insertion error:", err);
@@ -52,4 +71,28 @@ export const handler = async (event) => {
       body: JSON.stringify({ error: "Failed to save submission" }),
     };
   }
+  if (!submission.email) {
+    console.error("Submission missing email field");
+  } else {
+    try {
+      const transporter = getTransporter();
+      await transporter.sendMail({
+        from: process.env.SMTP_USER,
+        to: submission.email,
+        subject: "Thank you for your submission",
+        text: `Hello ${
+          submission.name || ""
+        },\n\nThank you for reaching out. We received your message:\n\n${
+          submission.message
+        }`,
+      });
+    } catch (err) {
+      console.error("Email notification error:", err);
+    }
+  }
+  return {
+    statusCode: 201,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id: insertedId }),
+  };
 };
