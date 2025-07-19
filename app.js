@@ -1,6 +1,6 @@
 import { MongoClient } from "mongodb";
 import nodemailer from "nodemailer";
-import AkismetClient from "akismet-api";
+import { AkismetClient } from "akismet-api";
 
 let cachedClient = null;
 async function connectToDatabase() {
