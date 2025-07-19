@@ -1,5 +1,6 @@
 import { MongoClient } from "mongodb";
 import nodemailer from "nodemailer";
+import { AkismetClient } from "akismet-api";
 
 let cachedClient = null;
 async function connectToDatabase() {
@@ -30,6 +31,26 @@ function getTransporter() {
   return cachedTransporter;
 }
 
+async function isSpam(submission) {
+  const akismet = new AkismetClient({
+    key: process.env.AKISMET_API_KEY,
+    blog: process.env.AKISMET_BLOG_URL,
+  });
+  try {
+    return await akismet.checkComment({
+      user_ip: submission.ip,
+      user_agent: submission.userAgent,
+      referrer: submission.referrer,
+      comment_author: submission.name,
+      comment_author_email: submission.email,
+      comment_content: submission.message,
+    });
+  } catch (err) {
+    console.error("Akismet check failed:", err);
+    return false;
+  }
+}
+
 export const handler = async (event) => {
   const method = event.httpMethod || event.requestContext?.http?.method;
   if (method !== "POST") {
@@ -47,6 +68,20 @@ export const handler = async (event) => {
     return {
       statusCode: 400,
       body: JSON.stringify({ error: "Invalid JSON payload" }),
+    };
+  }
+
+  submission.ip = event.requestContext?.http?.sourceIp || "";
+  submission.userAgent = event.headers?.["user-agent"] || "";
+  submission.referrer =
+    event.headers?.["referer"] || event.headers?.["referrer"] || "";
+
+  const spam = await isSpam(submission);
+  if (spam) {
+    console.error("Spam detected:", submission);
+    return {
+      statusCode: 403,
+      body: JSON.stringify({ error: "Spam detected" }),
     };
   }
 
