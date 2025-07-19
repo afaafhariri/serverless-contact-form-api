@@ -38,12 +38,12 @@ async function isSpam(submission) {
   });
   try {
     return await akismet.checkComment({
-      user_ip: submission.ip || "",
-      user_agent: submission.userAgent || "",
-      referrer: submission.referrer || "",
-      comment_author: submission.name || "",
-      comment_author_email: submission.email || "",
-      comment_content: submission.message || "",
+      user_ip: submission.ip,
+      user_agent: submission.userAgent,
+      referrer: submission.referrer,
+      comment_author: submission.name,
+      comment_author_email: submission.email,
+      comment_content: submission.message,
     });
   } catch (err) {
     console.error("Akismet check failed:", err);
@@ -71,8 +71,14 @@ export const handler = async (event) => {
     };
   }
 
+  submission.ip = event.requestContext?.http?.sourceIp || "";
+  submission.userAgent = event.headers["user-agent"] || "";
+  submission.referrer =
+    event.headers["referer"] || event.headers["referrer"] || "";
+
   const spam = await isSpam(submission);
   if (spam) {
+    console.error("Spam detected:", submission);
     return {
       statusCode: 403,
       body: JSON.stringify({ error: "Spam detected" }),
