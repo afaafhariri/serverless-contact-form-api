@@ -72,9 +72,9 @@ export const handler = async (event) => {
   }
 
   submission.ip = event.requestContext?.http?.sourceIp || "";
-  submission.userAgent = event.headers["user-agent"] || "";
+  submission.userAgent = event.headers?.["user-agent"] || "";
   submission.referrer =
-    event.headers["referer"] || event.headers["referrer"] || "";
+    event.headers?.["referer"] || event.headers?.["referrer"] || "";
 
   const spam = await isSpam(submission);
   if (spam) {
