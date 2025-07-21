@@ -122,6 +122,6 @@ Expect **403 Forbidden** with `{ "error": "Spam detected" }`.
 - **Timeouts**: Increase Lambda **Timeout** to at least 10s under **General configuration**.
 - **Network errors**: Whitelist Lambda’s IPs in MongoDB Atlas or configure a VPC with NAT gateway.
 
-## License
+#
 
 © Afaaf Hariri
